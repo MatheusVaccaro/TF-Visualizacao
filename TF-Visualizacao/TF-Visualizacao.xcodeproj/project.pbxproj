@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2941DAA922B08F5E002E9473 /* WordCloudViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2941DAA822B08F5E002E9473 /* WordCloudViewController.swift */; };
+		2941DAAB22B08F67002E9473 /* wordcloud.html in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAA22B08F67002E9473 /* wordcloud.html */; };
+		2941DAAF22B08F73002E9473 /* d3.v3.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAC22B08F72002E9473 /* d3.v3.min.js */; };
+		2941DAB022B08F73002E9473 /* seedrandom.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAD22B08F73002E9473 /* seedrandom.js */; };
+		2941DAB122B08F73002E9473 /* d3.layout.cloud.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAE22B08F73002E9473 /* d3.layout.cloud.js */; };
 		29BE669B22AFEC16001A4373 /* WordCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29BE669A22AFEC16001A4373 /* WordCloud.swift */; };
 		7205E66179DF5B0353DCD38D /* Pods_TF_Visualizacao.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B001501AC0512161B915B29 /* Pods_TF_Visualizacao.framework */; };
 		C2D6F4B422AAF5A5009D0C81 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D6F4B322AAF5A5009D0C81 /* AppDelegate.swift */; };
@@ -17,6 +22,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2941DAA822B08F5E002E9473 /* WordCloudViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordCloudViewController.swift; sourceTree = "<group>"; };
+		2941DAAA22B08F67002E9473 /* wordcloud.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = wordcloud.html; sourceTree = "<group>"; };
+		2941DAAC22B08F72002E9473 /* d3.v3.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = d3.v3.min.js; sourceTree = "<group>"; };
+		2941DAAD22B08F73002E9473 /* seedrandom.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = seedrandom.js; sourceTree = "<group>"; };
+		2941DAAE22B08F73002E9473 /* d3.layout.cloud.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = d3.layout.cloud.js; sourceTree = "<group>"; };
 		29BE669A22AFEC16001A4373 /* WordCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordCloud.swift; sourceTree = "<group>"; };
 		62D0421D70E92A21A056DEB7 /* Pods-TF-Visualizacao.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TF-Visualizacao.release.xcconfig"; path = "Pods/Target Support Files/Pods-TF-Visualizacao/Pods-TF-Visualizacao.release.xcconfig"; sourceTree = "<group>"; };
 		6B001501AC0512161B915B29 /* Pods_TF_Visualizacao.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TF_Visualizacao.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,6 +92,11 @@
 			children = (
 				C2D6F4B322AAF5A5009D0C81 /* AppDelegate.swift */,
 				C2D6F4B522AAF5A5009D0C81 /* ViewController.swift */,
+				2941DAAA22B08F67002E9473 /* wordcloud.html */,
+				2941DAAE22B08F73002E9473 /* d3.layout.cloud.js */,
+				2941DAAC22B08F72002E9473 /* d3.v3.min.js */,
+				2941DAAD22B08F73002E9473 /* seedrandom.js */,
+				2941DAA822B08F5E002E9473 /* WordCloudViewController.swift */,
 				C2D6F4B722AAF5A5009D0C81 /* Main.storyboard */,
 				C2D6F4BA22AAF5A6009D0C81 /* Assets.xcassets */,
 				C2D6F4BC22AAF5A6009D0C81 /* LaunchScreen.storyboard */,
@@ -151,6 +166,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2941DAB122B08F73002E9473 /* d3.layout.cloud.js in Resources */,
+				2941DAAF22B08F73002E9473 /* d3.v3.min.js in Resources */,
+				2941DAAB22B08F67002E9473 /* wordcloud.html in Resources */,
+				2941DAB022B08F73002E9473 /* seedrandom.js in Resources */,
 				C2D6F4BE22AAF5A6009D0C81 /* LaunchScreen.storyboard in Resources */,
 				C2D6F4BB22AAF5A6009D0C81 /* Assets.xcassets in Resources */,
 				C2D6F4B922AAF5A5009D0C81 /* Main.storyboard in Resources */,
@@ -208,6 +227,7 @@
 			files = (
 				C2D6F4B622AAF5A5009D0C81 /* ViewController.swift in Sources */,
 				C2D6F4B422AAF5A5009D0C81 /* AppDelegate.swift in Sources */,
+				2941DAA922B08F5E002E9473 /* WordCloudViewController.swift in Sources */,
 				29BE669B22AFEC16001A4373 /* WordCloud.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
