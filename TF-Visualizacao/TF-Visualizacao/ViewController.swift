@@ -10,6 +10,8 @@ import UIKit
 import Charts
 
 class ViewController: UIViewController {
+    
+    var agesData: AGESData!
 
     let activities = ["Burger", "Steak", "Salad", "Pasta", "Pizza"]
     @IBOutlet weak var radarChartView: RadarChartView!
@@ -27,12 +29,20 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        setupData()
+        
         configureRadarChart()
         setRadarChartData()
+        
         configureBarChart()
         setBarChartData()
-        
+    
         setupWordCloud()
+    }
+    
+    func setupData() {
+        self.agesData = AGESDataParser.parseAGESData()
     }
     
     func setupWordCloud() {
