@@ -16,6 +16,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var horizontalSlider: UISlider!
     @IBOutlet weak var barChartView: BarChartView!
     
+    var wordCloudViewController: WordCloudViewController!
+    @IBOutlet weak var wordCloudContainerView: UIView!
+    
     lazy var formatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 1
@@ -28,6 +31,20 @@ class ViewController: UIViewController {
         setRadarChartData()
         configureBarChart()
         setBarChartData()
+        
+        setupWordCloud()
+    }
+    
+    func setupWordCloud() {
+        self.wordCloudViewController = WordCloudViewController()
+        addChild(wordCloudViewController)
+        
+        wordCloudContainerView.addSubview(wordCloudViewController.view)
+        let constraints = wordCloudViewController.view
+            .constrainedExpansion(inside: wordCloudContainerView)
+        NSLayoutConstraint.activate(constraints)
+        
+        wordCloudViewController.didMove(toParent: self)
     }
 
     func configureRadarChart() {
@@ -39,6 +56,7 @@ class ViewController: UIViewController {
         radarChartView.webColor = .lightGray
         radarChartView.innerWebColor = .lightGray
         radarChartView.webAlpha = 1
+        radarChartView.rotationEnabled = false
         
 //        let marker = RadarMarkerView.viewFromXib()!
 //        marker.chartView = chartView

@@ -6,7 +6,7 @@
     <head>
         <title>Word Cloud Test</title>
     </head>
-    <body>
+    <body style="margin: 0; text-align: center">
         <form>
             <input type="button" value="Refresh cloud" onclick="drawCloud()" style="display: none">
         </form>
@@ -49,7 +49,7 @@
             d3.select("body").append("svg")
                 .attr("width", layout.size()[0])
                 .attr("height", layout.size()[1])
-                .attr("style", "display: block; margin: auto; background-color: #e8f0ff")
+                .attr("style", "display: inline-block;")
 			.append("g")
                 .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
             .selectAll("text")

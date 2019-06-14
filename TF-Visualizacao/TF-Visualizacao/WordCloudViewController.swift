@@ -35,13 +35,22 @@ class WordCloudViewController: UIViewController {
         webView.navigationDelegate = self
         webView.scrollView.delegate = self
         
+        // Configure WebView's scroll view
+        let scrollView = webView.scrollView
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        
         // Make it so tapping WKWebView refreshes the word cloud
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         tapGesture.delegate = self
         webView.addGestureRecognizer(tapGesture)
         
         // Wrap up and load the .html file
-        view = webView
+        view.addSubview(webView)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate(webView.constrainedExpansion(inside: view))
+        
         loadPage()
     }
     
@@ -73,6 +82,12 @@ class WordCloudViewController: UIViewController {
     
     /// Fires when the .html file has finished loading.
     private func handlePageLoad() {
+        // Configure WebView's scroll view
+        let scrollView = webView.scrollView
+        scrollView.isScrollEnabled = false
+        scrollView.panGestureRecognizer.isEnabled = false
+        scrollView.contentInsetAdjustmentBehavior = .never
+        
         setWordCloudSize(view.frame.size)
         drawCloud()
     }
@@ -129,6 +144,11 @@ extension WordCloudViewController: UIScrollViewDelegate {
     /// Same as above.
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return nil
+    }
+    
+    /// Forcefully stops the view from scrolling
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        scrollView.contentOffset = .zero//CGPoint(x: 15, y: 15)
     }
 }
 
