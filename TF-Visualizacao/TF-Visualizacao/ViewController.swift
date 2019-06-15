@@ -11,7 +11,12 @@ import Charts
 
 class ViewController: UIViewController {
     
+    let wordSizer = WordSizer()
     var agesData: AGESData!
+    
+    // Selected date range
+    var earliestDateSelection: Date!
+    var latestDateSelection: Date!
 
     let activities = ["Burger", "Steak", "Salad", "Pasta", "Pizza"]
     @IBOutlet weak var radarChartView: RadarChartView!
@@ -32,6 +37,8 @@ class ViewController: UIViewController {
         
         setupData()
         
+        setupSlider()
+        
         configureRadarChart()
         setRadarChartData()
         
@@ -42,59 +49,31 @@ class ViewController: UIViewController {
     }
     
     func setupData() {
-        self.agesData = AGESDataParser.parseAGESData()
+        self.agesData = AGESDataLoader.parseAGESData()
+        
     }
     
-    func setupWordCloud() {
-        self.wordCloudViewController = WordCloudViewController()
-        addChild(wordCloudViewController)
+    func setupSlider() {
+        horizontalSlider.minimumValue = Float(agesData.earliestReportDate.timeIntervalSince1970)
+        horizontalSlider.maximumValue = Float(agesData.latestReportDate.timeIntervalSince1970)
         
-        wordCloudContainerView.addSubview(wordCloudViewController.view)
-        let constraints = wordCloudViewController.view
-            .constrainedExpansion(inside: wordCloudContainerView)
-        NSLayoutConstraint.activate(constraints)
-        
-        wordCloudViewController.didMove(toParent: self)
+        horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchCancel)
+        horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchUpOutside)
+        horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchUpInside)
     }
-
-    func configureRadarChart() {
-        radarChartView.delegate = self
+    
+    @objc func refreshData() {
+        let selectedReports = agesData.reports.filter { (report) -> Bool in
+            return earliestDateSelection <= report.date && report.date <= latestDateSelection
+        }
+        print(selectedReports.count)
         
-        radarChartView.chartDescription?.enabled = false
-        radarChartView.webLineWidth = 1
-        radarChartView.innerWebLineWidth = 1
-        radarChartView.webColor = .lightGray
-        radarChartView.innerWebColor = .lightGray
-        radarChartView.webAlpha = 1
-        radarChartView.rotationEnabled = false
+        wordSizer.reset()
+        wordSizer.count(tokens: selectedReports.flatMap({ $0.tokens }))
+        let words = wordSizer.spit()
         
-//        let marker = RadarMarkerView.viewFromXib()!
-//        marker.chartView = chartView
-//        chartView.marker = marker
-        
-        let xAxis = radarChartView.xAxis
-        xAxis.labelFont = .systemFont(ofSize: 9, weight: .light)
-        xAxis.xOffset = 0
-        xAxis.yOffset = 0
-        xAxis.valueFormatter = self
-//        xAxis.labelTextColor = .white
-        
-        let yAxis = radarChartView.yAxis
-        yAxis.labelFont = .systemFont(ofSize: 9, weight: .light)
-        yAxis.labelCount = 5
-        yAxis.axisMinimum = -80
-        yAxis.axisMaximum = 80
-        yAxis.drawLabelsEnabled = true
-        
-        let l = radarChartView.legend
-        l.horizontalAlignment = .center
-        l.verticalAlignment = .top
-        l.orientation = .horizontal
-        l.drawInside = false
-        l.font = .systemFont(ofSize: 10, weight: .light)
-        l.xEntrySpace = 7
-        l.yEntrySpace = 5
-//        l.textColor = .white
+        wordCloudViewController.setWords(words)
+        wordCloudViewController.drawCloud()
     }
     
     func setRadarChartData() {
@@ -132,8 +111,50 @@ class ViewController: UIViewController {
         radarChartView.data = data
     }
     
+    func setBarChartData() {
+        let yVals = (0..<10).map { (i) -> BarChartDataEntry in
+            let mult = UInt32(3)
+            let val1 = Double(arc4random_uniform(mult) + mult / 3)
+            let val2 = Double(arc4random_uniform(mult) + mult / 3)
+            let val3 = Double(arc4random_uniform(mult) + mult / 3)
+
+            return BarChartDataEntry(x: Double(i), yValues: [val1, val2, val3])
+        }
+        
+//        let dataEntry = BarChartDataEntry(x: 0, yValues: [1, 2, 3])
+        let dataSet = BarChartDataSet(entries: yVals, label: nil)
+        dataSet.stackLabels = ["Negativo", "Neutro", "Positivo"]
+        dataSet.colors = [ChartColorTemplates.material()[2], ChartColorTemplates.material()[1], ChartColorTemplates.material()[0]]
+        
+        let data = BarChartData(dataSet: dataSet)
+        data.setValueFont(.systemFont(ofSize: 7, weight: .light))
+        data.setValueFormatter(DefaultValueFormatter(formatter: formatter))
+        data.setValueTextColor(.white)
+        
+        barChartView.fitBars = true
+        barChartView.data = data
+    }
+    
+    @IBAction func didChangeSliderValue(_ sender: UISlider) {
+		earliestDateSelection = agesData.earliestReportDate
+        latestDateSelection = Date(timeIntervalSince1970: Double(sender.value))
+    }
+    
+    
+    func setupWordCloud() {
+        self.wordCloudViewController = WordCloudViewController()
+        addChild(wordCloudViewController)
+        
+        wordCloudContainerView.addSubview(wordCloudViewController.view)
+        let constraints = wordCloudViewController.view
+            .constrainedExpansion(inside: wordCloudContainerView)
+        NSLayoutConstraint.activate(constraints)
+        
+        wordCloudViewController.didMove(toParent: self)
+    }
+    
     func configureBarChart() {
-//        barChartView.delegate = self
+        //        barChartView.delegate = self
         
         barChartView.chartDescription?.enabled = false
         barChartView.pinchZoomEnabled = true
@@ -163,35 +184,44 @@ class ViewController: UIViewController {
         l.xEntrySpace = 6
     }
     
-    func setBarChartData() {
+    func configureRadarChart() {
+        radarChartView.delegate = self
         
+        radarChartView.chartDescription?.enabled = false
+        radarChartView.webLineWidth = 1
+        radarChartView.innerWebLineWidth = 1
+        radarChartView.webColor = .lightGray
+        radarChartView.innerWebColor = .lightGray
+        radarChartView.webAlpha = 1
+        radarChartView.rotationEnabled = false
         
-        let yVals = (0..<10).map { (i) -> BarChartDataEntry in
-            let mult = UInt32(3)
-            let val1 = Double(arc4random_uniform(mult) + mult / 3)
-            let val2 = Double(arc4random_uniform(mult) + mult / 3)
-            let val3 = Double(arc4random_uniform(mult) + mult / 3)
-
-            return BarChartDataEntry(x: Double(i), yValues: [val1, val2, val3])
-        }
+        //        let marker = RadarMarkerView.viewFromXib()!
+        //        marker.chartView = chartView
+        //        chartView.marker = marker
         
+        let xAxis = radarChartView.xAxis
+        xAxis.labelFont = .systemFont(ofSize: 9, weight: .light)
+        xAxis.xOffset = 0
+        xAxis.yOffset = 0
+        xAxis.valueFormatter = self
+        //        xAxis.labelTextColor = .white
         
-//        let dataEntry = BarChartDataEntry(x: 0, yValues: [1, 2, 3])
-        let dataSet = BarChartDataSet(entries: yVals, label: nil)
-        dataSet.stackLabels = ["Negativo", "Neutro", "Positivo"]
-        dataSet.colors = [ChartColorTemplates.material()[2], ChartColorTemplates.material()[1], ChartColorTemplates.material()[0]]
+        let yAxis = radarChartView.yAxis
+        yAxis.labelFont = .systemFont(ofSize: 9, weight: .light)
+        yAxis.labelCount = 5
+        yAxis.axisMinimum = -80
+        yAxis.axisMaximum = 80
+        yAxis.drawLabelsEnabled = true
         
-        let data = BarChartData(dataSet: dataSet)
-        data.setValueFont(.systemFont(ofSize: 7, weight: .light))
-        data.setValueFormatter(DefaultValueFormatter(formatter: formatter))
-        data.setValueTextColor(.white)
-        
-        barChartView.fitBars = true
-        barChartView.data = data
-    }
-    
-    @IBAction func didChangeSliderValue(_ sender: UISlider) {
-        
+        let l = radarChartView.legend
+        l.horizontalAlignment = .center
+        l.verticalAlignment = .top
+        l.orientation = .horizontal
+        l.drawInside = false
+        l.font = .systemFont(ofSize: 10, weight: .light)
+        l.xEntrySpace = 7
+        l.yEntrySpace = 5
+        //        l.textColor = .white
     }
 }
 

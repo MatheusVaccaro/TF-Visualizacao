@@ -17,4 +17,6 @@ extension Date {
         
         return date
     }
+    
+    static var zero: Date { return Date(timeIntervalSince1970: 0) }
 }

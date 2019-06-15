@@ -3,4 +3,5 @@ use_frameworks!
 
 target 'TF-Visualizacao' do
   pod 'Charts'
+  pod 'CSV.swift', '~> 2.4.0'
 end

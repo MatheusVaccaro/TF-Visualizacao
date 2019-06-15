@@ -10,11 +10,19 @@ import Foundation
 
 typealias Name = String
 
-class AGESData {
+class AGESData: Codable, CustomStringConvertible {
+
+    var description: String { projects.reduce("", { "\($0)\n\($1)" }) }
     
-    var projects: [Name: Project] = [:]
-    
-    class Project {
+    var projectStore: [Name: Project] = [:]
+
+    lazy var projects: [Project] = { return Array(projectStore.values) }()
+    lazy var reports: [Report] = { return projectStore.values.flatMap({ $0.students.values }).flatMap({ $0.reports }) }()
+    lazy var earliestReportDate: Date = { return reports.reduce(Date(), { $1.date < $0 ? $1.date : $0 }) }()
+    lazy var latestReportDate: Date = { return reports.reduce(Date.zero, { $1.date > $0 ? $1.date : $0 }) }()
+        
+    class Project: Codable, CustomStringConvertible {
+        var description: String { "\(name)\(students.values.reduce("", {"\($0)\n\t\($1)"}))" }
         let name: String
         var students: [Name: Student] = [:]
         
@@ -23,7 +31,8 @@ class AGESData {
         }
     }
     
-    class Student {
+    class Student: Codable, CustomStringConvertible {
+        var description: String { "\(name) - \(reports.count) reports - \(commits.count) commits" }
         let name: String
         var reports: [Report] = []
         var commits: [Commit] = []
@@ -33,12 +42,24 @@ class AGESData {
         }
     }
     
-    struct Report {
+    class Report: Codable, CustomStringConvertible {
+        var description: String { type.description }
         let content: String
         let type: ReportType
         let date: Date
         
-        enum ReportType {
+        let tokens: [Token]
+        
+        init(content: String, type: ReportType, date: Date) {
+            self.content = content
+            self.type = type
+            self.date = date
+            
+            self.tokens = Preprocessor.shared.process(input: content)
+        }
+        
+        enum ReportType: String, Codable, CustomStringConvertible {
+            var description: String { rawValue }
             case problemsEncountered
             case lessonsLearned
             case negligible
@@ -53,7 +74,7 @@ class AGESData {
         }
     }
     
-    struct Commit {
+    struct Commit: Codable {
         let date: Date
     }
 }
