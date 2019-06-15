@@ -146,9 +146,7 @@ class ViewController: UIViewController {
         addChild(wordCloudViewController)
         
         wordCloudContainerView.addSubview(wordCloudViewController.view)
-        let constraints = wordCloudViewController.view
-            .constrainedExpansion(inside: wordCloudContainerView)
-        NSLayoutConstraint.activate(constraints)
+        wordCloudViewController.view.constrainedExpansion(inside: wordCloudContainerView)
         
         wordCloudViewController.didMove(toParent: self)
     }

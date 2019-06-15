@@ -37,7 +37,6 @@ class WordSizer {
         let smallest = sizes.reduce(.max, min)
         let biggest = sizes.reduce(.min, max)
         
-        
         let scaledWords = words.map({ ($0.word, scale(size: $0.size, between: smallest, and: biggest)) })
         
         return scaledWords

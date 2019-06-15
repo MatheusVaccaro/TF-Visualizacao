@@ -29,7 +29,7 @@
 		];
 
         var varScale = d3.scale.linear()
-            .domain([1, 300])
+            .domain([10, 500])
             .range([15, 80]);
 
         var layout = d3.layout.cloud()
@@ -42,7 +42,13 @@
             .fontSize( function(d){ return varScale(d.size); } )
             .on("end", draw);
 
-        var fill = d3.scale.category10();
+        var greens = ["#00AD1A", "#01CC20", "#00DE21", "#38BB4C", "#2F9C3F"]
+        var reds = ["#FF1E00", "#CC1800", "#AC0600", "#CA0F16", "#C82219"];
+		var colors = greens
+        
+        var fill = function(i) {
+            return colors[Math.floor(Math.random()*colors.length)];
+        }
 		
 		function draw(words) {
 			d3.selectAll("svg").remove();
@@ -76,6 +82,10 @@
         function setCloudSize(size){
         	layout.size(size);
         }
+    
+    	function useRed(bool) {
+            colors = bool ? reds : greens;
+	    }
 
         function drawCloud(){		
             console.log("Gerando tag cloud...");

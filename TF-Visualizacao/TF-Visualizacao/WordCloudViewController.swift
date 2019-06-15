@@ -49,7 +49,7 @@ class WordCloudViewController: UIViewController {
         view.addSubview(webView)
         view.translatesAutoresizingMaskIntoConstraints = false
         webView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate(webView.constrainedExpansion(inside: view))
+        webView.constrainedExpansion(inside: view)
         
         loadPage()
     }
@@ -73,6 +73,13 @@ class WordCloudViewController: UIViewController {
         command.append("]")
         
         execute(command: command)
+    }
+    
+    
+    /// Use red colors to color words, as opposed to green colors.
+    /// - Parameter bool: Set to `true` if you want to use red colors.
+    func useRedColors(_ bool: Bool) {
+        execute(command: "useRed(\(bool));")
     }
     
     /// Fires when the view is tapped, generating a new word cloud.
