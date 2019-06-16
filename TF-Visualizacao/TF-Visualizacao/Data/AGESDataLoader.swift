@@ -15,7 +15,7 @@ class AGESDataLoader {
     static let agesDataFiletype = "csv"
     
     static func parseAGESData() -> AGESData {
-        let agesData = retrieveDataFromDisk() ?? processRawData()
+        let agesData = processRawData()//retrieveDataFromDisk() ?? processRawData()
         
         return agesData
     }
@@ -52,7 +52,7 @@ class AGESDataLoader {
             
             // Parse content type
             let content = csv["content"]!
-            let contentType = AGESData.Report.ReportType.from(csv["type"]!)
+            let contentType = AGESData.Report.ReportType.from(csv["title"]!)
             let turnInDate = Date.from(string: csv["turn_in_date"]!)
             
             let report = AGESData.Report(content: content, type: contentType, date: turnInDate)

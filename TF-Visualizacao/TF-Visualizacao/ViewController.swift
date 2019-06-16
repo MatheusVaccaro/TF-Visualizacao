@@ -11,20 +11,24 @@ import Charts
 
 class ViewController: UIViewController {
     
-    let wordSizer = WordSizer()
-    var agesData: AGESData!
+    private let wordSizer = WordSizer()
+    private var agesData: AGESData!
     
     // Selected date range
-    var earliestDateSelection: Date!
-    var latestDateSelection: Date!
+    private var earliestDateSelection: Date!
+    private var latestDateSelection: Date!
 
     let activities = ["Burger", "Steak", "Salad", "Pasta", "Pizza"]
     @IBOutlet weak var radarChartView: RadarChartView!
-    @IBOutlet weak var horizontalSlider: UISlider!
     @IBOutlet weak var barChartView: BarChartView!
     
-    var wordCloudViewController: WordCloudViewController!
-    @IBOutlet weak var wordCloudContainerView: UIView!
+    var lessonsLearnedWordCloudVC: WordCloudViewController!
+    @IBOutlet weak var lessonsLearnedWordCloudContainerView: UIView!
+    
+    var problemsEncounteredWordCloudVC: WordCloudViewController!
+    @IBOutlet weak var problemsEncounteredWordCloudContainerView: UIView!
+    
+    @IBOutlet weak var horizontalSlider: UISlider!
     
     lazy var formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -45,7 +49,7 @@ class ViewController: UIViewController {
         configureBarChart()
         setBarChartData()
     
-        setupWordCloud()
+        setupWordClouds()
     }
     
     func setupData() {
@@ -69,11 +73,14 @@ class ViewController: UIViewController {
         print(selectedReports.count)
         
         wordSizer.reset()
-        wordSizer.count(tokens: selectedReports.flatMap({ $0.tokens }))
-        let words = wordSizer.spit()
+        wordSizer.count(tokens: selectedReports.filter({ $0.type == .lessonsLearned }).flatMap({ $0.tokens }))
+        lessonsLearnedWordCloudVC.setWords(wordSizer.spit())
+        lessonsLearnedWordCloudVC.drawCloud()
         
-        wordCloudViewController.setWords(words)
-        wordCloudViewController.drawCloud()
+        wordSizer.reset()
+        wordSizer.count(tokens: selectedReports.filter({ $0.type == .problemsEncountered }).flatMap({ $0.tokens }))
+        problemsEncounteredWordCloudVC.setWords(wordSizer.spit())
+        problemsEncounteredWordCloudVC.drawCloud()
     }
     
     func setRadarChartData() {
@@ -141,14 +148,19 @@ class ViewController: UIViewController {
     }
     
     
-    func setupWordCloud() {
-        self.wordCloudViewController = WordCloudViewController()
-        addChild(wordCloudViewController)
+    func setupWordClouds() {
+        self.lessonsLearnedWordCloudVC = WordCloudViewController()
+        addChild(lessonsLearnedWordCloudVC)
+        lessonsLearnedWordCloudContainerView.addSubview(lessonsLearnedWordCloudVC.view)
+        lessonsLearnedWordCloudVC.view.constrainedExpansion(inside: lessonsLearnedWordCloudContainerView)
+        lessonsLearnedWordCloudVC.didMove(toParent: self)
         
-        wordCloudContainerView.addSubview(wordCloudViewController.view)
-        wordCloudViewController.view.constrainedExpansion(inside: wordCloudContainerView)
-        
-        wordCloudViewController.didMove(toParent: self)
+        self.problemsEncounteredWordCloudVC = WordCloudViewController()
+        problemsEncounteredWordCloudVC.shouldUseRed = true
+        addChild(problemsEncounteredWordCloudVC)
+        problemsEncounteredWordCloudContainerView.addSubview(problemsEncounteredWordCloudVC.view)
+        problemsEncounteredWordCloudVC.view.constrainedExpansion(inside: problemsEncounteredWordCloudContainerView)
+        problemsEncounteredWordCloudVC.didMove(toParent: self)
     }
     
     func configureBarChart() {

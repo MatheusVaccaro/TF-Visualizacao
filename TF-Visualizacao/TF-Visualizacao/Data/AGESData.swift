@@ -55,7 +55,7 @@ class AGESData: Codable, CustomStringConvertible {
             self.type = type
             self.date = date
             
-            self.tokens = Preprocessor.shared.process(input: content)
+            self.tokens = Tokenizer.shared.process(input: content)
         }
         
         enum ReportType: String, Codable, CustomStringConvertible {

@@ -9,9 +9,9 @@
 import Foundation
 import NaturalLanguage
 
-class Preprocessor {
+class Tokenizer {
     
-    static let shared = Preprocessor()
+    static let shared = Tokenizer()
     
     private typealias Word = (text: String, trace: Range<String.Index>)
     private typealias LemmatizedWord = (word: Word, lemma: String)
@@ -36,10 +36,14 @@ class Preprocessor {
         var tokens: [Token] = []
         for index in 0..<posTagging.count {
             let posTag = posTagging[index].lexicalCategory
-            guard posTag == .noun else { continue }
             
+            guard posTag == .noun else { continue }
+        
             let rawText = posTagging[index].word.text
-            let lemma = filterWord(rawText) ?? lemmatization[index].lemma
+            let lemma = adjustWord(rawText)
+                ?? adjustWord(lemmatization[index].lemma) ?? lemmatization[index].lemma
+            
+            guard !filterWord(lemma) else { continue }
             
             let token = Token(raw: rawText, lemma: lemma, partOfSpeechTag: posTag)
             tokens.append(token)
@@ -88,7 +92,7 @@ class Preprocessor {
         return posTagging
     }
     
-    private let filter: [String:String] =
+    private let adjustments: [String:String] =
         ["ages":"AGES",
          "java": "Java",
          "javascript": "JavaScript",
@@ -100,9 +104,18 @@ class Preprocessor {
          "css": "CSS",
          "back": "backend",
          "front": "frontend",
-         "stories": "story"]
+         "stories": "story",
+         "dado": "dados",
+         "html": "HTML"]
     
-    private func filterWord(_ word: String) -> String? {
-        return filter[word]
+    private func adjustWord(_ word: String) -> String? {
+        return adjustments[word]
+    }
+    
+    private let filter: [String] =
+        ["dia", "coisa", "dificuldade", "forma", "lição", "projeto", "problema",  "end", "maneira", "parte", "pouco", "uso", "utilização", "vez"]
+    
+    private func filterWord(_ word: String) -> Bool {
+    	return filter.contains(word)
     }
 }

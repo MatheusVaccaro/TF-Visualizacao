@@ -16,6 +16,8 @@ class WordCloudViewController: UIViewController {
     
     var webView: WKWebView!
     
+    var shouldUseRed: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -95,6 +97,7 @@ class WordCloudViewController: UIViewController {
         scrollView.panGestureRecognizer.isEnabled = false
         scrollView.contentInsetAdjustmentBehavior = .never
         
+        useRedColors(shouldUseRed)
         setWordCloudSize(view.frame.size)
         drawCloud()
     }
