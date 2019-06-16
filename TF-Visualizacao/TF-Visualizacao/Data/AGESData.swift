@@ -9,6 +9,7 @@
 import Foundation
 
 typealias Name = String
+typealias Email = String
 
 class AGESData: Codable, CustomStringConvertible {
 
@@ -23,8 +24,9 @@ class AGESData: Codable, CustomStringConvertible {
         
     class Project: Codable, CustomStringConvertible {
         var description: String { "\(name)\(students.values.reduce("", {"\($0)\n\t\($1)"}))" }
+        
         let name: String
-        var students: [Name: Student] = [:]
+        var students: [Email: Student] = [:]
         
         init(name: String) {
             self.name = name
@@ -34,11 +36,13 @@ class AGESData: Codable, CustomStringConvertible {
     class Student: Codable, CustomStringConvertible {
         var description: String { "\(name) - \(reports.count) reports - \(commits.count) commits" }
         let name: String
+        let email: String
         var reports: [Report] = []
         var commits: [Commit] = []
         
-        init(name: String) {
+        init(name: String, email: String) {
             self.name = name
+            self.email = email
         }
     }
     
@@ -76,6 +80,7 @@ class AGESData: Codable, CustomStringConvertible {
     
     struct Commit: Codable {
         let date: Date
+        let authorEmail: String
     }
 }
 

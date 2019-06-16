@@ -12,18 +12,32 @@ import CSV
 class AGESDataLoader {
     
     static let agesDataFilename = "ages-weekly_reports"
-    static let agesDataFiletype = "csv"
+    static let commitDataFilename = "ages-student_commits"
+    static let dataFiletype = "csv"
     
     static func parseAGESData() -> AGESData {
         let agesData = processRawData()//retrieveDataFromDisk() ?? processRawData()
+        
+        print("Loaded the following data:\n\(agesData)")
         
         return agesData
     }
     
     static func processRawData() -> AGESData {
+        let agesData = AGESData()
+
+        processWeeklyReportData(into: agesData)
+        processCommitData(into: agesData)
+        
+        writeToDisk(agesData)
+        
+        return agesData
+    }
+    
+    private static func processWeeklyReportData(into agesData: AGESData) {
         print("Attempting to parse and process AGES data from CSV file.")
         guard let path = Bundle.main.path(forResource: AGESDataLoader.agesDataFilename,
-                                          ofType: AGESDataLoader.agesDataFiletype) else {
+                                          ofType: AGESDataLoader.dataFiletype) else {
                                             fatalError("AGESData file not found.")
         }
         
@@ -36,8 +50,7 @@ class AGESDataLoader {
                                         fatalError("Error parsing AGES data.")
         }
         
-        let agesData = AGESData()
-        print("Began parsing data")
+        print("Began parsing weekly report data.")
         
         while csv.next() != nil {
             // Create or find existing project by name
@@ -47,8 +60,10 @@ class AGESDataLoader {
             
             // Create or find existing student by name
             let studentName = csv["name"]!
-            let student = project.students[studentName] ?? AGESData.Student(name: studentName)
-            project.students[studentName] = student
+            let studentEmail = csv["email"]!
+            let student = project.students[studentEmail]
+                ?? AGESData.Student(name: studentName, email: studentEmail)
+            project.students[studentEmail] = student
             
             // Parse content type
             let content = csv["content"]!
@@ -59,16 +74,50 @@ class AGESDataLoader {
             student.reports.append(report)
         }
         
-        print("Finished parsing data")
-        
-        writeToDisk(agesData)
-        
-        return agesData
+        print("Finished weekly report parsing data")
     }
+    
+    private static func processCommitData(into agesData: AGESData) {
+        print("Attempting to parse and process commit data from CSV file.")
+        guard let path = Bundle.main.path(forResource: AGESDataLoader.commitDataFilename,
+                                          ofType: AGESDataLoader.dataFiletype) else {
+                                            fatalError("Commit data file not found.")
+        }
+        
+        guard let rawData = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
+            fatalError("Failed to load commit data.")
+        }
+        
+        guard let csv = try? CSVReader(stream: InputStream(data: rawData),
+                                       hasHeaderRow: true, trimFields: true, delimiter: ",") else {
+                                        fatalError("Error parsing commit data.")
+        }
+        
+        // Building one huge dic of students
+        let students = agesData.projects.reduce([:]) { (students, project) -> [Name: AGESData.Student] in
+        	students.merging(project.students, uniquingKeysWith: { $1 })
+        }
+        
+        print("Began parsing commit data.")
+        
+        while csv.next() != nil {
+            
+            let email = csv["email"]!
+            let date = Date.from(altString: csv["date"]!)
+            
+            let commit = AGESData.Commit(date: date, authorEmail: email)
+            
+            if let student = students[email] {
+                student.commits.append(commit)
+            }
+        }
+    }
+    
+    /// Disk Storage
     
     static let processedAGESDataFile = "processedAGESData.json"
     
-    static func writeToDisk(_ data: AGESData) {
+    private static func writeToDisk(_ data: AGESData) {
         print("Writing processed AGES data to disk as JSON.")
         
         let jsonEncoder = JSONEncoder()
@@ -86,9 +135,9 @@ class AGESDataLoader {
         }
     }
     
-    static let jsonError = "Failed to retrieve processed JSON AGES data from disk."
+    private static let jsonError = "Failed to retrieve processed JSON AGES data from disk."
     
-    static func retrieveDataFromDisk() -> AGESData? {
+    private static func retrieveDataFromDisk() -> AGESData? {
         print("Retrieving JSON AGES data from disk.")
         
         if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
@@ -97,8 +146,6 @@ class AGESDataLoader {
             do {
                 let agesJSON = try Data(contentsOf: fileURL)
                 let agesData = try JSONDecoder().decode(AGESData.self, from: agesJSON)
-                
-                print("Retrieved the following data:\n\(agesData)")
                 
                 return agesData
             } catch {

@@ -14,6 +14,7 @@
 		2941DAAF22B08F73002E9473 /* d3.v3.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAC22B08F72002E9473 /* d3.v3.min.js */; };
 		2941DAB022B08F73002E9473 /* seedrandom.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAD22B08F73002E9473 /* seedrandom.js */; };
 		2941DAB122B08F73002E9473 /* d3.layout.cloud.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAE22B08F73002E9473 /* d3.layout.cloud.js */; };
+		296890A622B5E3740069F048 /* ages-student_commits.csv in Resources */ = {isa = PBXBuildFile; fileRef = 296890A522B5E3740069F048 /* ages-student_commits.csv */; };
 		298B3E8222B568C300C0BCBE /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298B3E8122B568C300C0BCBE /* Array+Extension.swift */; };
 		298B3E8822B5C39700C0BCBE /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298B3E8622B5C39700C0BCBE /* Token.swift */; };
 		298B3E8922B5C39700C0BCBE /* Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298B3E8722B5C39700C0BCBE /* Tokenizer.swift */; };
@@ -38,6 +39,7 @@
 		2941DAAC22B08F72002E9473 /* d3.v3.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = d3.v3.min.js; sourceTree = "<group>"; };
 		2941DAAD22B08F73002E9473 /* seedrandom.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = seedrandom.js; sourceTree = "<group>"; };
 		2941DAAE22B08F73002E9473 /* d3.layout.cloud.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = d3.layout.cloud.js; sourceTree = "<group>"; };
+		296890A522B5E3740069F048 /* ages-student_commits.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "ages-student_commits.csv"; sourceTree = "<group>"; };
 		298B3E8122B568C300C0BCBE /* Array+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extension.swift"; sourceTree = "<group>"; };
 		298B3E8622B5C39700C0BCBE /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		298B3E8722B5C39700C0BCBE /* Tokenizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tokenizer.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				29AF7EC122B431910067CD9D /* AGESDataLoader.swift */,
 				29AF7EBD22B430050067CD9D /* AGESData.swift */,
 				29AF7EBF22B430E10067CD9D /* ages-weekly_reports.csv */,
+				296890A522B5E3740069F048 /* ages-student_commits.csv */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -219,6 +222,7 @@
 			files = (
 				2941DAB122B08F73002E9473 /* d3.layout.cloud.js in Resources */,
 				2941DAAF22B08F73002E9473 /* d3.v3.min.js in Resources */,
+				296890A622B5E3740069F048 /* ages-student_commits.csv in Resources */,
 				2941DAAB22B08F67002E9473 /* wordcloud.html in Resources */,
 				2941DAB022B08F73002E9473 /* seedrandom.js in Resources */,
 				C2D6F4BE22AAF5A6009D0C81 /* LaunchScreen.storyboard in Resources */,
