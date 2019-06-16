@@ -15,11 +15,11 @@ class ViewController: UIViewController {
     private let wordSizer = WordSizer()
     private var agesData: AGESData!
     
-    // Selected date range
-    private var earliestDateSelection: Date!
-    private var latestDateSelection: Date!
+    // Data selection
+    private var selectedProjects: [Name] = []
+    private var selectionEarlyDate: Date!
+    private var selectionLateDate: Date!
 
-    let activities = ["Burger", "Steak", "Salad", "Pasta", "Pizza"]
     @IBOutlet weak var radarChartView: RadarChartView!
     @IBOutlet weak var lineChart: Chart!
     
@@ -49,45 +49,49 @@ class ViewController: UIViewController {
         
         refreshData()
     }
-    
+    // MARK: - Data
     @objc func refreshData() {
-        // TODO: Filter by projects
-        let selectedReports = agesData.reports.filter { (report) -> Bool in
-            return earliestDateSelection <= report.date && report.date <= latestDateSelection
-        }
-        print("Selected \(selectedReports.count) weekly reports")
+        let projects = agesData.projects.filter({ selectedProjects.contains($0.name) })
         
-        wordSizer.reset()
-        wordSizer.count(tokens: selectedReports.filter({ $0.type == .lessonsLearned }).flatMap({ $0.tokens }))
-        lessonsLearnedWordCloudVC.setWords(wordSizer.spit())
-        lessonsLearnedWordCloudVC.drawCloud()
+        let selectedReports = projects
+            .flatMap({ $0.students.values }).flatMap({ $0.reports })
+            .filter({ selectionEarlyDate <= $0.date && $0.date <= selectionLateDate })
         
-        wordSizer.reset()
-        wordSizer.count(tokens: selectedReports.filter({ $0.type == .problemsEncountered }).flatMap({ $0.tokens }))
-        problemsEncounteredWordCloudVC.setWords(wordSizer.spit())
-        problemsEncounteredWordCloudVC.drawCloud()
+        let selectedCommits = projects
+        	.flatMap({ $0.students.values }).flatMap({ $0.commits })
+            .filter({ selectionEarlyDate <= $0.date && $0.date <= selectionLateDate })
         
-        let selectedCommits = agesData.commits.filter { (commit) -> Bool in
-            return earliestDateSelection <= commit.date && commit.date <= latestDateSelection
-        }
-        print("Selected \(selectedCommits.count) commits")
+        setRadarChartData(reports: selectedReports)
+        setWordCloudData(reports: selectedReports)
         setLineChartData(commits: selectedCommits)
     }
     
     func setupData() {
         self.agesData = AGESDataLoader.parseAGESData()
         
+        selectionEarlyDate = agesData.earliestReportDate
+        selectionLateDate = agesData.latestReportDate
+        selectedProjects = agesData.projects.map({ $0.name })
     }
+    
+    // MARK: - Slider
+    @IBAction func didChangeSliderValue(_ sender: UISlider) {
+        selectionEarlyDate = agesData.earliestReportDate
+        selectionLateDate = Date(timeIntervalSince1970: Double(sender.value))
+    }
+    
     
     func setupSlider() {
         horizontalSlider.minimumValue = Float(agesData.earliestReportDate.timeIntervalSince1970)
         horizontalSlider.maximumValue = Float(agesData.latestReportDate.timeIntervalSince1970)
+        horizontalSlider.value = Float(selectionLateDate.timeIntervalSince1970)
         
         horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchCancel)
         horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchUpOutside)
         horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchUpInside)
     }
     
+    // MARK: - Line Chart
     func setLineChartData(commits: [AGESData.Commit]) {
         let aggregatedCommits = aggregate(commits: commits)
         
@@ -111,83 +115,30 @@ class ViewController: UIViewController {
         }
     }
     
-    typealias Week = Int
-    typealias Count = Int
+    func configureLineChart() {
+        lineChart.maxY = 60
+        lineChart.lineWidth = 2
+        lineChart.labelFont = UIFont.systemFont(ofSize: 10)
+        lineChart.xLabels = (32...48).map({ Double($0) })
+    }
+
+    /// Aggregate commit records into weeks, categorized by projects.
+    /// - Parameter commits: commits to be aggregated
     private func aggregate(commits: [AGESData.Commit]) -> [Name: [Week: Count]] {
-        var aggregatedCommits: [Name: [Int: Int]] = [:]
-        commits.forEach({ aggregatedCommits[$0.projectName] = [:] })
+        var aggregatedCommits: [Name: [Week: Count]] = [:]
+        commits.forEach({ aggregatedCommits[$0.projectName] = [:] }) // Initialize dics
+        
         for commit in commits {
             let week = Calendar.current.component(.weekOfYear, from: commit.date)
             aggregatedCommits[commit.projectName]![week] = 1 + (aggregatedCommits[commit.projectName]![week] ?? 1)
         }
+        
         return aggregatedCommits
     }
+    typealias Week = Int
+    typealias Count = Int
     
-    func setRadarChartData() {
-        let mult: UInt32 = 80
-        let min: UInt32 = 20
-        let cnt = 5
-        
-        let block: (Int) -> RadarChartDataEntry = { _ in return RadarChartDataEntry(value: Double(arc4random_uniform(mult) + min))}
-        let entries1 = (0..<cnt).map(block)
-        let entries2 = (0..<cnt).map(block)
-        
-        let set1 = RadarChartDataSet(entries: entries1, label: "Last Week")
-        set1.setColor(UIColor(red: 103/255, green: 110/255, blue: 129/255, alpha: 1))
-        set1.fillColor = UIColor(red: 103/255, green: 110/255, blue: 129/255, alpha: 1)
-        set1.drawFilledEnabled = true
-        set1.fillAlpha = 0.7
-        set1.lineWidth = 2
-        set1.drawHighlightCircleEnabled = true
-        set1.setDrawHighlightIndicators(false)
-        
-        let set2 = RadarChartDataSet(entries: entries2, label: "This Week")
-        set2.setColor(UIColor(red: 121/255, green: 162/255, blue: 175/255, alpha: 1))
-        set2.fillColor = UIColor(red: 121/255, green: 162/255, blue: 175/255, alpha: 1)
-        set2.drawFilledEnabled = true
-        set2.fillAlpha = 0.7
-        set2.lineWidth = 2
-        set2.drawHighlightCircleEnabled = true
-        set2.setDrawHighlightIndicators(false)
-        
-        let data = RadarChartData(dataSets: [set1, set2])
-        data.setValueFont(.systemFont(ofSize: 8, weight: .light))
-        data.setDrawValues(false)
-        data.setValueTextColor(.white)
-        
-        radarChartView.data = data
-    }
-    
-    func setBarChartData() {
-//        let yVals = (0..<10).map { (i) -> BarChartDataEntry in
-//            let mult = UInt32(3)
-//            let val1 = Double(arc4random_uniform(mult) + mult / 3)
-//            let val2 = Double(arc4random_uniform(mult) + mult / 3)
-//            let val3 = Double(arc4random_uniform(mult) + mult / 3)
-//
-//            return BarChartDataEntry(x: Double(i), yValues: [val1, val2, val3])
-//        }
-//
-////        let dataEntry = BarChartDataEntry(x: 0, yValues: [1, 2, 3])
-//        let dataSet = BarChartDataSet(entries: yVals, label: nil)
-//        dataSet.stackLabels = ["Negativo", "Neutro", "Positivo"]
-//        dataSet.colors = [ChartColorTemplates.material()[2], ChartColorTemplates.material()[1], ChartColorTemplates.material()[0]]
-//
-//        let data = BarChartData(dataSet: dataSet)
-//        data.setValueFont(.systemFont(ofSize: 7, weight: .light))
-//        data.setValueFormatter(DefaultValueFormatter(formatter: formatter))
-//        data.setValueTextColor(.white)
-//
-//        barChartView.fitBars = true
-//        barChartView.data = data
-    }
-    
-    @IBAction func didChangeSliderValue(_ sender: UISlider) {
-		earliestDateSelection = agesData.earliestReportDate
-        latestDateSelection = Date(timeIntervalSince1970: Double(sender.value))
-    }
-    
-    
+    // MARK: - Word clouds
     func configureWordClouds() {
         self.lessonsLearnedWordCloudVC = WordCloudViewController()
         addChild(lessonsLearnedWordCloudVC)
@@ -203,39 +154,47 @@ class ViewController: UIViewController {
         problemsEncounteredWordCloudVC.didMove(toParent: self)
     }
     
-    func configureLineChart() {
-        lineChart.maxY = 60
-        lineChart.lineWidth = 2
-        lineChart.labelFont = UIFont.systemFont(ofSize: 10)
-        lineChart.xLabels = (32...48).map({ Double($0) })
-//        //        barChartView.delegate = self
-//
-//        barChartView.chartDescription?.enabled = false
-//        barChartView.pinchZoomEnabled = true
-//        barChartView.autoScaleMinMaxEnabled = true
-//
-//        barChartView.maxVisibleCount = 40
-//        barChartView.drawBarShadowEnabled = false
-//        barChartView.drawValueAboveBarEnabled = false
-//        barChartView.highlightFullBarEnabled = false
-//
-//        let leftAxis = barChartView.leftAxis
-//        leftAxis.valueFormatter = DefaultAxisValueFormatter(formatter: formatter)
-//        leftAxis.axisMinimum = 0
-//
-//        barChartView.rightAxis.enabled = false
-//
-//        let xAxis = barChartView.xAxis
-//        xAxis.labelPosition = .bottom
-//
-//        let l = barChartView.legend
-//        l.horizontalAlignment = .right
-//        l.verticalAlignment = .bottom
-//        l.orientation = .horizontal
-//        l.drawInside = false
-//        l.form = .square
-//        l.formToTextSpace = 4
-//        l.xEntrySpace = 6
+    func setWordCloudData(reports: [AGESData.Report]) {
+        wordSizer.reset()
+        wordSizer.count(tokens: reports.filter({ $0.type == .lessonsLearned }).flatMap({ $0.tokens }))
+        lessonsLearnedWordCloudVC.setWords(wordSizer.spit())
+        lessonsLearnedWordCloudVC.drawCloud()
+        
+        wordSizer.reset()
+        wordSizer.count(tokens: reports.filter({ $0.type == .problemsEncountered }).flatMap({ $0.tokens }))
+        problemsEncounteredWordCloudVC.setWords(wordSizer.spit())
+        problemsEncounteredWordCloudVC.drawCloud()
+    }
+    
+    // MARK: - Radar Chart
+    func setRadarChartData(reports: [AGESData.Report]) {
+        var aggregatedReports: [Name: [AGESData.Report]] = [:]
+        reports.forEach({ aggregatedReports[$0.projectName] = [] })
+        reports.forEach({ aggregatedReports[$0.projectName]!.append($0) })
+        
+        var entries = [RadarChartDataEntry]()
+        for (_, reports) in aggregatedReports {
+            let score = reports.map({ $0.sentimentScore }).reduce(0, +) / Double(reports.count)
+            entries.append(RadarChartDataEntry(value: score))
+        }
+        
+        let set1 = RadarChartDataSet(entries: entries, label: "Last Week")
+        set1.setColor(UIColor(red: 103/255, green: 110/255, blue: 129/255, alpha: 1))
+        set1.fillColor = UIColor(red: 103/255, green: 110/255, blue: 129/255, alpha: 1)
+        set1.drawFilledEnabled = true
+        set1.fillAlpha = 0.7
+        set1.lineWidth = 2
+        set1.drawHighlightCircleEnabled = true
+        set1.setDrawHighlightIndicators(false)
+        
+        let data = RadarChartData(dataSets: [set1])
+        data.setValueFont(.systemFont(ofSize: 8, weight: .light))
+        data.setDrawValues(false)
+        data.setValueTextColor(.white)
+        
+        radarChartView.data = data
+        radarChartView.yAxis.axisMinimum = -1
+        radarChartView.yAxis.axisMaximum = 1
     }
     
     func configureRadarChart() {
@@ -248,10 +207,7 @@ class ViewController: UIViewController {
         radarChartView.innerWebColor = .lightGray
         radarChartView.webAlpha = 1
         radarChartView.rotationEnabled = false
-        
-        //        let marker = RadarMarkerView.viewFromXib()!
-        //        marker.chartView = chartView
-        //        chartView.marker = marker
+//        radarChartView.chartYMax = 1
         
         let xAxis = radarChartView.xAxis
         xAxis.labelFont = .systemFont(ofSize: 9, weight: .light)
@@ -262,10 +218,11 @@ class ViewController: UIViewController {
         
         let yAxis = radarChartView.yAxis
         yAxis.labelFont = .systemFont(ofSize: 9, weight: .light)
-        yAxis.labelCount = 5
-        yAxis.axisMinimum = -80
-        yAxis.axisMaximum = 80
+        yAxis.labelCount = 3
+        yAxis.axisMinimum = -1
+        yAxis.axisMaximum = 1
         yAxis.drawLabelsEnabled = true
+        yAxis.maxWidth = 500
         
         let l = radarChartView.legend
         l.horizontalAlignment = .center
@@ -281,7 +238,7 @@ class ViewController: UIViewController {
 
 extension ViewController: IAxisValueFormatter {
     func stringForValue(_ value: Double, axis: AxisBase?) -> String {
-        return activities[Int(value) % activities.count]
+        return agesData.projects[Int(value) % agesData.projects.count].name
     }
 }
 

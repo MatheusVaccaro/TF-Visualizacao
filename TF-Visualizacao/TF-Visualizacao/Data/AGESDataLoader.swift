@@ -52,6 +52,7 @@ class AGESDataLoader {
         }
         
         print("Began parsing weekly report data.")
+        print("Reports are being tokenized and having their sentiment analyzed.")
         
         while csv.next() != nil {
             // Create or find existing project by name
@@ -71,7 +72,7 @@ class AGESDataLoader {
             let contentType = AGESData.Report.ReportType.from(csv["title"]!)
             let turnInDate = Date.from(string: csv["turn_in_date"]!)
             
-            let report = AGESData.Report(content: content, type: contentType, date: turnInDate)
+            let report = AGESData.Report(content: content, projectName: projectName, type: contentType, date: turnInDate)
             student.reports.append(report)
         }
         

@@ -26,7 +26,10 @@ class AGESData: Codable, CustomStringConvertible {
     lazy var commits: [Commit] = { return projects.flatMap({ $0.students.values }).flatMap({ $0.commits }) }()
     lazy var earliestCommitDate: Date = { return commits.reduce(Date(), { $1.date < $0 ? $1.date : $0 }) }()
     lazy var latestCommitDate: Date = { return commits.reduce(Date.zero, { $1.date > $0 ? $1.date : $0 }) }()
-        
+    
+    
+    
+    // MARK: - Project
     class Project: Codable, CustomStringConvertible {
         var description: String { "\(name)\(students.values.reduce("", {"\($0)\n\t\($1)"}))" }
         
@@ -38,6 +41,9 @@ class AGESData: Codable, CustomStringConvertible {
         }
     }
     
+    
+    
+    // MAKK: - Student
     class Student: Codable, CustomStringConvertible {
         var description: String { "\(name) - \(reports.count) reports - \(commits.count) commits" }
         let name: String
@@ -51,20 +57,28 @@ class AGESData: Codable, CustomStringConvertible {
         }
     }
     
+    
+    
+    // MAKK: - Report
     class Report: Codable, CustomStringConvertible {
         var description: String { type.description }
+        
         let content: String
+        let projectName: String
         let type: ReportType
         let date: Date
+        let sentimentScore: Double
         
         let tokens: [Token]
         
-        init(content: String, type: ReportType, date: Date) {
+        init(content: String, projectName: String, type: ReportType, date: Date) {
             self.content = content
             self.type = type
             self.date = date
+            self.projectName = projectName
             
             self.tokens = Tokenizer.shared.process(input: content)
+            self.sentimentScore = NeuralSentimentAnalysis.shared.process(input: content)
         }
         
         enum ReportType: String, Codable, CustomStringConvertible {
@@ -83,6 +97,9 @@ class AGESData: Codable, CustomStringConvertible {
         }
     }
     
+    
+    
+    // MAKK: - Commit
     struct Commit: Codable {
         let date: Date
         let authorEmail: Email

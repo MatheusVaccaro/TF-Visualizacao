@@ -15,6 +15,8 @@
 		2941DAB022B08F73002E9473 /* seedrandom.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAD22B08F73002E9473 /* seedrandom.js */; };
 		2941DAB122B08F73002E9473 /* d3.layout.cloud.js in Resources */ = {isa = PBXBuildFile; fileRef = 2941DAAE22B08F73002E9473 /* d3.layout.cloud.js */; };
 		296890A622B5E3740069F048 /* ages-student_commits.csv in Resources */ = {isa = PBXBuildFile; fileRef = 296890A522B5E3740069F048 /* ages-student_commits.csv */; };
+		29856C0522B6AEC8005E9AFA /* NeuralSentimentAnalysisPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29856C0422B6AEC8005E9AFA /* NeuralSentimentAnalysisPhase.swift */; };
+		29856C0722B6AF49005E9AFA /* Sentiment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29856C0622B6AF49005E9AFA /* Sentiment.swift */; };
 		298B3E8222B568C300C0BCBE /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298B3E8122B568C300C0BCBE /* Array+Extension.swift */; };
 		298B3E8822B5C39700C0BCBE /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298B3E8622B5C39700C0BCBE /* Token.swift */; };
 		298B3E8922B5C39700C0BCBE /* Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298B3E8722B5C39700C0BCBE /* Tokenizer.swift */; };
@@ -40,6 +42,8 @@
 		2941DAAD22B08F73002E9473 /* seedrandom.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = seedrandom.js; sourceTree = "<group>"; };
 		2941DAAE22B08F73002E9473 /* d3.layout.cloud.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = d3.layout.cloud.js; sourceTree = "<group>"; };
 		296890A522B5E3740069F048 /* ages-student_commits.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "ages-student_commits.csv"; sourceTree = "<group>"; };
+		29856C0422B6AEC8005E9AFA /* NeuralSentimentAnalysisPhase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NeuralSentimentAnalysisPhase.swift; sourceTree = "<group>"; };
+		29856C0622B6AF49005E9AFA /* Sentiment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sentiment.swift; sourceTree = "<group>"; };
 		298B3E8122B568C300C0BCBE /* Array+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extension.swift"; sourceTree = "<group>"; };
 		298B3E8622B5C39700C0BCBE /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		298B3E8722B5C39700C0BCBE /* Tokenizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tokenizer.swift; sourceTree = "<group>"; };
@@ -102,6 +106,8 @@
 			children = (
 				298B3E8722B5C39700C0BCBE /* Tokenizer.swift */,
 				298B3E8622B5C39700C0BCBE /* Token.swift */,
+				29856C0422B6AEC8005E9AFA /* NeuralSentimentAnalysisPhase.swift */,
+				29856C0622B6AF49005E9AFA /* Sentiment.swift */,
 			);
 			path = NLP;
 			sourceTree = "<group>";
@@ -286,6 +292,8 @@
 				C2D6F4B622AAF5A5009D0C81 /* ViewController.swift in Sources */,
 				29AF7EC222B431910067CD9D /* AGESDataLoader.swift in Sources */,
 				C2D6F4B422AAF5A5009D0C81 /* AppDelegate.swift in Sources */,
+				29856C0722B6AF49005E9AFA /* Sentiment.swift in Sources */,
+				29856C0522B6AEC8005E9AFA /* NeuralSentimentAnalysisPhase.swift in Sources */,
 				29AF7EBC22B4190C0067CD9D /* UIView+Extension.swift in Sources */,
 				29AF7EBE22B430050067CD9D /* AGESData.swift in Sources */,
 				2941536C22B446E100E681B3 /* Date+Extension.swift in Sources */,
@@ -442,6 +450,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = LY74HQDURM;
 				INFOPLIST_FILE = "TF-Visualizacao/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -461,6 +470,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = LY74HQDURM;
 				INFOPLIST_FILE = "TF-Visualizacao/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
