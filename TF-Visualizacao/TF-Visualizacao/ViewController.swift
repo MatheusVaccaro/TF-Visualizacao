@@ -8,6 +8,7 @@
 
 import UIKit
 import Charts
+import SwiftChart
 
 class ViewController: UIViewController {
     
@@ -20,7 +21,7 @@ class ViewController: UIViewController {
 
     let activities = ["Burger", "Steak", "Salad", "Pasta", "Pizza"]
     @IBOutlet weak var radarChartView: RadarChartView!
-    @IBOutlet weak var barChartView: BarChartView!
+    @IBOutlet weak var lineChart: Chart!
     
     var lessonsLearnedWordCloudVC: WordCloudViewController!
     @IBOutlet weak var lessonsLearnedWordCloudContainerView: UIView!
@@ -32,7 +33,7 @@ class ViewController: UIViewController {
     
     lazy var formatter: NumberFormatter = {
         let formatter = NumberFormatter()
-        formatter.maximumFractionDigits = 1
+        formatter.maximumFractionDigits = 0
         return formatter
     }()
     
@@ -40,16 +41,37 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         setupData()
-        
         setupSlider()
         
         configureRadarChart()
-        setRadarChartData()
+        configureLineChart()
+        configureWordClouds()
         
-        configureBarChart()
-        setBarChartData()
+        refreshData()
+    }
     
-        setupWordClouds()
+    @objc func refreshData() {
+        // TODO: Filter by projects
+        let selectedReports = agesData.reports.filter { (report) -> Bool in
+            return earliestDateSelection <= report.date && report.date <= latestDateSelection
+        }
+        print("Selected \(selectedReports.count) weekly reports")
+        
+        wordSizer.reset()
+        wordSizer.count(tokens: selectedReports.filter({ $0.type == .lessonsLearned }).flatMap({ $0.tokens }))
+        lessonsLearnedWordCloudVC.setWords(wordSizer.spit())
+        lessonsLearnedWordCloudVC.drawCloud()
+        
+        wordSizer.reset()
+        wordSizer.count(tokens: selectedReports.filter({ $0.type == .problemsEncountered }).flatMap({ $0.tokens }))
+        problemsEncounteredWordCloudVC.setWords(wordSizer.spit())
+        problemsEncounteredWordCloudVC.drawCloud()
+        
+        let selectedCommits = agesData.commits.filter { (commit) -> Bool in
+            return earliestDateSelection <= commit.date && commit.date <= latestDateSelection
+        }
+        print("Selected \(selectedCommits.count) commits")
+        setLineChartData(commits: selectedCommits)
     }
     
     func setupData() {
@@ -66,21 +88,39 @@ class ViewController: UIViewController {
         horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchUpInside)
     }
     
-    @objc func refreshData() {
-        let selectedReports = agesData.reports.filter { (report) -> Bool in
-            return earliestDateSelection <= report.date && report.date <= latestDateSelection
+    func setLineChartData(commits: [AGESData.Commit]) {
+        let aggregatedCommits = aggregate(commits: commits)
+        
+        var dataset = [ChartSeries]()
+        for (_, weeks) in aggregatedCommits {
+            let data = weeks.map({ ($0.key, Double($0.value)) }).sorted(by: { $0.0 < $1.0 })
+            let series = ChartSeries(data: data)
+            series.area = true
+            series.color = .random
+            
+            dataset.append(series)
         }
-        print(selectedReports.count)
         
-        wordSizer.reset()
-        wordSizer.count(tokens: selectedReports.filter({ $0.type == .lessonsLearned }).flatMap({ $0.tokens }))
-        lessonsLearnedWordCloudVC.setWords(wordSizer.spit())
-        lessonsLearnedWordCloudVC.drawCloud()
+        lineChart.removeAllSeries()
+        lineChart.add(dataset)
         
-        wordSizer.reset()
-        wordSizer.count(tokens: selectedReports.filter({ $0.type == .problemsEncountered }).flatMap({ $0.tokens }))
-        problemsEncounteredWordCloudVC.setWords(wordSizer.spit())
-        problemsEncounteredWordCloudVC.drawCloud()
+        // Set x axis labels
+        let xValues = dataset.flatMap({ $0.data }).map({ $0.x })
+        if let min = xValues.min(), let max = xValues.max() {
+            lineChart.xLabels = (Int(min)...Int(max)).map({ Double($0) })
+        }
+    }
+    
+    typealias Week = Int
+    typealias Count = Int
+    private func aggregate(commits: [AGESData.Commit]) -> [Name: [Week: Count]] {
+        var aggregatedCommits: [Name: [Int: Int]] = [:]
+        commits.forEach({ aggregatedCommits[$0.projectName] = [:] })
+        for commit in commits {
+            let week = Calendar.current.component(.weekOfYear, from: commit.date)
+            aggregatedCommits[commit.projectName]![week] = 1 + (aggregatedCommits[commit.projectName]![week] ?? 1)
+        }
+        return aggregatedCommits
     }
     
     func setRadarChartData() {
@@ -119,27 +159,27 @@ class ViewController: UIViewController {
     }
     
     func setBarChartData() {
-        let yVals = (0..<10).map { (i) -> BarChartDataEntry in
-            let mult = UInt32(3)
-            let val1 = Double(arc4random_uniform(mult) + mult / 3)
-            let val2 = Double(arc4random_uniform(mult) + mult / 3)
-            let val3 = Double(arc4random_uniform(mult) + mult / 3)
-
-            return BarChartDataEntry(x: Double(i), yValues: [val1, val2, val3])
-        }
-        
-//        let dataEntry = BarChartDataEntry(x: 0, yValues: [1, 2, 3])
-        let dataSet = BarChartDataSet(entries: yVals, label: nil)
-        dataSet.stackLabels = ["Negativo", "Neutro", "Positivo"]
-        dataSet.colors = [ChartColorTemplates.material()[2], ChartColorTemplates.material()[1], ChartColorTemplates.material()[0]]
-        
-        let data = BarChartData(dataSet: dataSet)
-        data.setValueFont(.systemFont(ofSize: 7, weight: .light))
-        data.setValueFormatter(DefaultValueFormatter(formatter: formatter))
-        data.setValueTextColor(.white)
-        
-        barChartView.fitBars = true
-        barChartView.data = data
+//        let yVals = (0..<10).map { (i) -> BarChartDataEntry in
+//            let mult = UInt32(3)
+//            let val1 = Double(arc4random_uniform(mult) + mult / 3)
+//            let val2 = Double(arc4random_uniform(mult) + mult / 3)
+//            let val3 = Double(arc4random_uniform(mult) + mult / 3)
+//
+//            return BarChartDataEntry(x: Double(i), yValues: [val1, val2, val3])
+//        }
+//
+////        let dataEntry = BarChartDataEntry(x: 0, yValues: [1, 2, 3])
+//        let dataSet = BarChartDataSet(entries: yVals, label: nil)
+//        dataSet.stackLabels = ["Negativo", "Neutro", "Positivo"]
+//        dataSet.colors = [ChartColorTemplates.material()[2], ChartColorTemplates.material()[1], ChartColorTemplates.material()[0]]
+//
+//        let data = BarChartData(dataSet: dataSet)
+//        data.setValueFont(.systemFont(ofSize: 7, weight: .light))
+//        data.setValueFormatter(DefaultValueFormatter(formatter: formatter))
+//        data.setValueTextColor(.white)
+//
+//        barChartView.fitBars = true
+//        barChartView.data = data
     }
     
     @IBAction func didChangeSliderValue(_ sender: UISlider) {
@@ -148,7 +188,7 @@ class ViewController: UIViewController {
     }
     
     
-    func setupWordClouds() {
+    func configureWordClouds() {
         self.lessonsLearnedWordCloudVC = WordCloudViewController()
         addChild(lessonsLearnedWordCloudVC)
         lessonsLearnedWordCloudContainerView.addSubview(lessonsLearnedWordCloudVC.view)
@@ -163,35 +203,39 @@ class ViewController: UIViewController {
         problemsEncounteredWordCloudVC.didMove(toParent: self)
     }
     
-    func configureBarChart() {
-        //        barChartView.delegate = self
-        
-        barChartView.chartDescription?.enabled = false
-        barChartView.pinchZoomEnabled = true
-        barChartView.autoScaleMinMaxEnabled = true
-        
-        barChartView.maxVisibleCount = 40
-        barChartView.drawBarShadowEnabled = false
-        barChartView.drawValueAboveBarEnabled = false
-        barChartView.highlightFullBarEnabled = false
-        
-        let leftAxis = barChartView.leftAxis
-        leftAxis.valueFormatter = DefaultAxisValueFormatter(formatter: formatter)
-        leftAxis.axisMinimum = 0
-        
-        barChartView.rightAxis.enabled = false
-        
-        let xAxis = barChartView.xAxis
-        xAxis.labelPosition = .bottom
-        
-        let l = barChartView.legend
-        l.horizontalAlignment = .right
-        l.verticalAlignment = .bottom
-        l.orientation = .horizontal
-        l.drawInside = false
-        l.form = .square
-        l.formToTextSpace = 4
-        l.xEntrySpace = 6
+    func configureLineChart() {
+        lineChart.maxY = 60
+        lineChart.lineWidth = 2
+        lineChart.labelFont = UIFont.systemFont(ofSize: 10)
+        lineChart.xLabels = (32...48).map({ Double($0) })
+//        //        barChartView.delegate = self
+//
+//        barChartView.chartDescription?.enabled = false
+//        barChartView.pinchZoomEnabled = true
+//        barChartView.autoScaleMinMaxEnabled = true
+//
+//        barChartView.maxVisibleCount = 40
+//        barChartView.drawBarShadowEnabled = false
+//        barChartView.drawValueAboveBarEnabled = false
+//        barChartView.highlightFullBarEnabled = false
+//
+//        let leftAxis = barChartView.leftAxis
+//        leftAxis.valueFormatter = DefaultAxisValueFormatter(formatter: formatter)
+//        leftAxis.axisMinimum = 0
+//
+//        barChartView.rightAxis.enabled = false
+//
+//        let xAxis = barChartView.xAxis
+//        xAxis.labelPosition = .bottom
+//
+//        let l = barChartView.legend
+//        l.horizontalAlignment = .right
+//        l.verticalAlignment = .bottom
+//        l.orientation = .horizontal
+//        l.drawInside = false
+//        l.form = .square
+//        l.formToTextSpace = 4
+//        l.xEntrySpace = 6
     }
     
     func configureRadarChart() {

@@ -18,9 +18,14 @@ class AGESData: Codable, CustomStringConvertible {
     var projectStore: [Name: Project] = [:]
 
     lazy var projects: [Project] = { return Array(projectStore.values) }()
-    lazy var reports: [Report] = { return projectStore.values.flatMap({ $0.students.values }).flatMap({ $0.reports }) }()
+    
+    lazy var reports: [Report] = { return projects.flatMap({ $0.students.values }).flatMap({ $0.reports }) }()
     lazy var earliestReportDate: Date = { return reports.reduce(Date(), { $1.date < $0 ? $1.date : $0 }) }()
     lazy var latestReportDate: Date = { return reports.reduce(Date.zero, { $1.date > $0 ? $1.date : $0 }) }()
+    
+    lazy var commits: [Commit] = { return projects.flatMap({ $0.students.values }).flatMap({ $0.commits }) }()
+    lazy var earliestCommitDate: Date = { return commits.reduce(Date(), { $1.date < $0 ? $1.date : $0 }) }()
+    lazy var latestCommitDate: Date = { return commits.reduce(Date.zero, { $1.date > $0 ? $1.date : $0 }) }()
         
     class Project: Codable, CustomStringConvertible {
         var description: String { "\(name)\(students.values.reduce("", {"\($0)\n\t\($1)"}))" }
@@ -80,7 +85,8 @@ class AGESData: Codable, CustomStringConvertible {
     
     struct Commit: Codable {
         let date: Date
-        let authorEmail: String
+        let authorEmail: Email
+        let projectName: Name
     }
 }
 

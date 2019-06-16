@@ -16,7 +16,8 @@ class AGESDataLoader {
     static let dataFiletype = "csv"
     
     static func parseAGESData() -> AGESData {
-        let agesData = processRawData()//retrieveDataFromDisk() ?? processRawData()
+        let agesData = retrieveDataFromDisk() ?? processRawData()
+//        let agesData = processRawData()
         
         print("Loaded the following data:\n\(agesData)")
         
@@ -104,8 +105,9 @@ class AGESDataLoader {
             
             let email = csv["email"]!
             let date = Date.from(altString: csv["date"]!)
+            let project = csv["project_name"]!
             
-            let commit = AGESData.Commit(date: date, authorEmail: email)
+            let commit = AGESData.Commit(date: date, authorEmail: email, projectName: project)
             
             if let student = students[email] {
                 student.commits.append(commit)
