@@ -92,9 +92,9 @@ class ViewController: UIViewController {
         slider.selectedMinValue = slider.minValue
         slider.selectedMaxValue = slider.maxValue
         
-        slider.tintColor = .gray
         
         let baseColor = App.detailColor
+        slider.tintColor = baseColor.lighter().lighter()
         slider.minLabelColor = baseColor
         slider.maxLabelColor = baseColor
         slider.colorBetweenHandles = baseColor
@@ -149,7 +149,7 @@ class ViewController: UIViewController {
         for (projectName, weeks) in aggregatedCommits {
             let data = weeks.map({ ($0.key, Double($0.value)) }).sorted(by: { $0.0 < $1.0 })
             let series = ChartSeries(data: data)
-            series.area = true
+            series.area = false
             series.color = App.projectColor[projectName]!
             
             dataset.append(series)
@@ -167,7 +167,7 @@ class ViewController: UIViewController {
     
     func configureLineChart() {
         lineChart.maxY = 60
-        lineChart.lineWidth = 2
+        lineChart.lineWidth = 3
         lineChart.labelFont = UIFont.systemFont(ofSize: 6)
         lineChart.xLabels = (32...48).map({ Double($0) })
         

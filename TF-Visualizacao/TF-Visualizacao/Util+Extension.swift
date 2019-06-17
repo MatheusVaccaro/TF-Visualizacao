@@ -62,17 +62,17 @@ extension UIColor {
 }
 
 struct App {
-    static let detailColor = UIColor.orange
+    static let detailColor = UIColor.gray
     
     static let projects = ["Desastres", "Dietoterapia", "Easy Class", "Milhas", "OAB", "Paisagem", "Rastreamento"]
     
-    static let projectColor = ["Desastres" : UIColor.yellow.darker()!,
-                               "Dietoterapia" : UIColor.red,
-                               "Easy Class" : UIColor.blue,
-                               "Milhas" : UIColor.cyan,
-                               "OAB" : UIColor.green,
-                               "Paisagem" : UIColor.magenta,
-                               "Rastreamento" : UIColor.purple]
+    static let projectColor = ["Desastres" : 	UIColor.systemOrange,
+                               "Dietoterapia" : UIColor.systemRed,
+                               "Easy Class" : 	UIColor.systemBlue,
+                               "Milhas" : 		UIColor.systemTeal,
+                               "OAB" : 			UIColor.systemGreen,
+                               "Paisagem" : 	UIColor.systemBrown,
+                               "Rastreamento" : UIColor.systemPurple]
 }
 
 
