@@ -9,6 +9,7 @@
 import UIKit
 import Charts
 import SwiftChart
+import RangeSeekSlider
 
 class ViewController: UIViewController {
     
@@ -29,7 +30,7 @@ class ViewController: UIViewController {
     var problemsEncounteredWordCloudVC: WordCloudViewController!
     @IBOutlet weak var problemsEncounteredWordCloudContainerView: UIView!
     
-    @IBOutlet weak var horizontalSlider: UISlider!
+    @IBOutlet weak var slider: RangeSeekSlider!
     
     lazy var formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -75,20 +76,26 @@ class ViewController: UIViewController {
     }
     
     // MARK: - Slider
-    @IBAction func didChangeSliderValue(_ sender: UISlider) {
-        selectionEarlyDate = agesData.earliestReportDate
-        selectionLateDate = Date(timeIntervalSince1970: Double(sender.value))
-    }
-    
-    
     func setupSlider() {
-        horizontalSlider.minimumValue = Float(agesData.earliestReportDate.timeIntervalSince1970)
-        horizontalSlider.maximumValue = Float(agesData.latestReportDate.timeIntervalSince1970)
-        horizontalSlider.value = Float(selectionLateDate.timeIntervalSince1970)
+		slider.delegate = self
+        slider.minValue = CGFloat(agesData.earliestReportDate.timeIntervalSince1970)
+        slider.maxValue = CGFloat(agesData.latestReportDate.timeIntervalSince1970)
+        slider.selectedMinValue = slider.minValue
+        slider.selectedMaxValue = slider.maxValue
         
-        horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchCancel)
-        horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchUpOutside)
-        horizontalSlider.addTarget(self, action: #selector(refreshData), for: .touchUpInside)
+        slider.tintColor = .gray
+        
+        let baseColor = UIColor.orange
+        slider.minLabelColor = baseColor
+        slider.maxLabelColor = baseColor
+        slider.colorBetweenHandles = baseColor
+        slider.handleColor = baseColor
+        
+        slider.numberFormatter = NumberDateFormatter()
+        
+        slider.addTarget(self, action: #selector(refreshData), for: .touchCancel)
+        slider.addTarget(self, action: #selector(refreshData), for: .touchUpOutside)
+        slider.addTarget(self, action: #selector(refreshData), for: .touchUpInside)
     }
     
     // MARK: - Line Chart
@@ -120,6 +127,17 @@ class ViewController: UIViewController {
         lineChart.lineWidth = 2
         lineChart.labelFont = UIFont.systemFont(ofSize: 10)
         lineChart.xLabels = (32...48).map({ Double($0) })
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd/MM"
+        
+        lineChart.xLabelsFormatter = {
+            let components = DateComponents(weekOfYear: Int($1), yearForWeekOfYear: 2019)
+            let date = Calendar.current.date(from: components)
+            let weekString = dateFormatter.string(from: date!)
+            
+            return weekString
+        }
     }
 
     /// Aggregate commit records into weeks, categorized by projects.
@@ -233,6 +251,13 @@ class ViewController: UIViewController {
         l.xEntrySpace = 7
         l.yEntrySpace = 5
         //        l.textColor = .white
+    }
+}
+
+extension ViewController: RangeSeekSliderDelegate {
+    func rangeSeekSlider(_ slider: RangeSeekSlider, didChange minValue: CGFloat, maxValue: CGFloat) {
+        selectionEarlyDate = Date(timeIntervalSince1970: Double(slider.selectedMinValue))
+        selectionLateDate = Date(timeIntervalSince1970: Double(slider.selectedMaxValue))
     }
 }
 

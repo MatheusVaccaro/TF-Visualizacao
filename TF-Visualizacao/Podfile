@@ -5,4 +5,5 @@ target 'TF-Visualizacao' do
   pod 'Charts'
   pod "SwiftChart"
   pod 'CSV.swift', '~> 2.4.0'
+  pod 'RangeSeekSlider'
 end
