@@ -85,7 +85,7 @@ class ViewController: UIViewController {
         
         slider.tintColor = .gray
         
-        let baseColor = UIColor.orange
+        let baseColor = App.detailColor
         slider.minLabelColor = baseColor
         slider.maxLabelColor = baseColor
         slider.colorBetweenHandles = baseColor
@@ -193,12 +193,13 @@ class ViewController: UIViewController {
         var entries = [RadarChartDataEntry]()
         for (_, reports) in aggregatedReports {
             let score = reports.map({ $0.sentimentScore }).reduce(0, +) / Double(reports.count)
-            entries.append(RadarChartDataEntry(value: score))
+            let adjustedScore = pow(score, 2) * 2
+            entries.append(RadarChartDataEntry(value: adjustedScore))
         }
         
-        let set1 = RadarChartDataSet(entries: entries, label: "Last Week")
-        set1.setColor(UIColor(red: 103/255, green: 110/255, blue: 129/255, alpha: 1))
-        set1.fillColor = UIColor(red: 103/255, green: 110/255, blue: 129/255, alpha: 1)
+        let set1 = RadarChartDataSet(entries: entries, label: "Escore de Sentimento")
+        set1.setColor(App.detailColor.lighter())
+        set1.fillColor = App.detailColor
         set1.drawFilledEnabled = true
         set1.fillAlpha = 0.7
         set1.lineWidth = 2
@@ -210,9 +211,13 @@ class ViewController: UIViewController {
         data.setDrawValues(false)
         data.setValueTextColor(.white)
         
-        radarChartView.data = data
         radarChartView.yAxis.axisMinimum = -1
         radarChartView.yAxis.axisMaximum = 1
+        radarChartView.yAxis.drawTopYLabelEntryEnabled = false
+        
+        radarChartView.data = data
+        
+        radarChartView.animate(xAxisDuration: 1.4, yAxisDuration: 1.4, easingOption: .easeOutBack)
     }
     
     func configureRadarChart() {
