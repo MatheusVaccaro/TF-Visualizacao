@@ -17,9 +17,9 @@ class AGESData: Codable, CustomStringConvertible {
     
     var projectStore: [Name: Project] = [:]
 
-    lazy var projects: [Project] = { return Array(projectStore.values) }()
+    lazy var projects: [Project] = { return Array(projectStore.values).sorted(by: { $0.name < $1.name}) }()
     
-    lazy var reports: [Report] = { return projects.flatMap({ $0.students.values }).flatMap({ $0.reports }) }()
+    lazy var reports: [Report] = { return projects.flatMap({ $0.reports }) }()
     lazy var earliestReportDate: Date = { return reports.reduce(Date(), { $1.date < $0 ? $1.date : $0 }) }()
     lazy var latestReportDate: Date = { return reports.reduce(Date.zero, { $1.date > $0 ? $1.date : $0 }) }()
     
@@ -30,14 +30,25 @@ class AGESData: Codable, CustomStringConvertible {
     
     
     // MARK: - Project
-    class Project: Codable, CustomStringConvertible {
+    class Project: Codable, CustomStringConvertible, Hashable {
+
         var description: String { "\(name)\(students.values.reduce("", {"\($0)\n\t\($1)"}))" }
         
         let name: String
         var students: [Email: Student] = [:]
         
+        lazy var reports: [Report] = { students.values.flatMap({ $0.reports }) }()
+        
         init(name: String) {
             self.name = name
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(name)
+        }
+        
+        static func == (lhs: AGESData.Project, rhs: AGESData.Project) -> Bool {
+            lhs.name == rhs.name
         }
     }
     

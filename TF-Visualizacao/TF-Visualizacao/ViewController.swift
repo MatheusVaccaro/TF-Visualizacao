@@ -17,7 +17,7 @@ class ViewController: UIViewController {
     private var agesData: AGESData!
     
     // Data selection
-    private var selectedProjects: [Name] = []
+    private var selectedProjects: Set<AGESData.Project> = []
     private var selectionEarlyDate: Date!
     private var selectionLateDate: Date!
 
@@ -32,17 +32,24 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var slider: RangeSeekSlider!
     
-    lazy var formatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.maximumFractionDigits = 0
-        return formatter
-    }()
+    @IBOutlet weak var desastresSwitch: UISwitch!
+    @IBOutlet weak var dietoterapiaSwitch: UISwitch!
+    @IBOutlet weak var easyClassSwitch: UISwitch!
+    @IBOutlet weak var milhasSwitch: UISwitch!
+    @IBOutlet weak var oabSwitch: UISwitch!
+    @IBOutlet weak var paisagemSwitch: UISwitch!
+    @IBOutlet weak var rastreamentoSwitch: UISwitch!
+    @IBOutlet weak var todosSwitch: UISwitch!
+    lazy var switches = { [desastresSwitch!, dietoterapiaSwitch!, easyClassSwitch!, milhasSwitch!, oabSwitch!, paisagemSwitch!, rastreamentoSwitch!, todosSwitch!] }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+//        view.backgroundColor = UIColor.darkGray
+        
         setupData()
         setupSlider()
+        setupSwitches()
         
         configureRadarChart()
         configureLineChart()
@@ -52,17 +59,19 @@ class ViewController: UIViewController {
     }
     // MARK: - Data
     @objc func refreshData() {
-        let projects = agesData.projects.filter({ selectedProjects.contains($0.name) })
+        let projects = selectedProjects
         
-        let selectedReports = projects
-            .flatMap({ $0.students.values }).flatMap({ $0.reports })
+        let aggregatedReports = projects.map({ $0.reports })
+        
+        let selectedReports = aggregatedReports
+            .flatMap({ $0 })
             .filter({ selectionEarlyDate <= $0.date && $0.date <= selectionLateDate })
         
         let selectedCommits = projects
         	.flatMap({ $0.students.values }).flatMap({ $0.commits })
             .filter({ selectionEarlyDate <= $0.date && $0.date <= selectionLateDate })
         
-        setRadarChartData(reports: selectedReports)
+        setRadarChartData(aggregatedReports: aggregatedReports)
         setWordCloudData(reports: selectedReports)
         setLineChartData(commits: selectedCommits)
     }
@@ -72,7 +81,7 @@ class ViewController: UIViewController {
         
         selectionEarlyDate = agesData.earliestReportDate
         selectionLateDate = agesData.latestReportDate
-        selectedProjects = agesData.projects.map({ $0.name })
+        selectedProjects = Set(agesData.projects)
     }
     
     // MARK: - Slider
@@ -98,16 +107,50 @@ class ViewController: UIViewController {
         slider.addTarget(self, action: #selector(refreshData), for: .touchUpInside)
     }
     
+    // MARK: - Switches
+    func setupSwitches() {
+        for uiSwitch in switches {
+            uiSwitch.addTarget(self, action: #selector(handleSwitch(_:)), for: .valueChanged)
+            
+            if uiSwitch.tag == -1 {
+                uiSwitch.onTintColor = App.detailColor
+            } else {
+                uiSwitch.onTintColor = App.projectColor[agesData.projects[uiSwitch.tag].name]!
+            }
+        }
+    }
+    
+    @objc func handleSwitch(_ sender: UISwitch) {
+        
+        if let project = agesData.projects[safe: sender.tag] {
+            if sender.isOn {
+                selectedProjects.insert(project)
+            } else {
+                selectedProjects.remove(project)
+            }
+        } else { // all projects switch
+            switches.forEach({ $0.isOn = sender.isOn })
+        
+            if sender.isOn {
+                selectedProjects = Set(agesData.projects)
+            } else {
+                selectedProjects.removeAll()
+            }
+        }
+        
+        refreshData()
+    }
+    
     // MARK: - Line Chart
     func setLineChartData(commits: [AGESData.Commit]) {
         let aggregatedCommits = aggregate(commits: commits)
         
         var dataset = [ChartSeries]()
-        for (_, weeks) in aggregatedCommits {
+        for (projectName, weeks) in aggregatedCommits {
             let data = weeks.map({ ($0.key, Double($0.value)) }).sorted(by: { $0.0 < $1.0 })
             let series = ChartSeries(data: data)
             series.area = true
-            series.color = .random
+            series.color = App.projectColor[projectName]!
             
             dataset.append(series)
         }
@@ -125,7 +168,7 @@ class ViewController: UIViewController {
     func configureLineChart() {
         lineChart.maxY = 60
         lineChart.lineWidth = 2
-        lineChart.labelFont = UIFont.systemFont(ofSize: 10)
+        lineChart.labelFont = UIFont.systemFont(ofSize: 6)
         lineChart.xLabels = (32...48).map({ Double($0) })
         
         let dateFormatter = DateFormatter()
@@ -185,13 +228,11 @@ class ViewController: UIViewController {
     }
     
     // MARK: - Radar Chart
-    func setRadarChartData(reports: [AGESData.Report]) {
-        var aggregatedReports: [Name: [AGESData.Report]] = [:]
-        reports.forEach({ aggregatedReports[$0.projectName] = [] })
-        reports.forEach({ aggregatedReports[$0.projectName]!.append($0) })
+    func setRadarChartData(aggregatedReports: [[AGESData.Report]]) {
+//        let aggregatedReports = agesData.projects.map({ $0.reports })
         
         var entries = [RadarChartDataEntry]()
-        for (_, reports) in aggregatedReports {
+        for reports in aggregatedReports {
             let score = reports.map({ $0.sentimentScore }).reduce(0, +) / Double(reports.count)
             let adjustedScore = pow(score, 2) * 2
             entries.append(RadarChartDataEntry(value: adjustedScore))
@@ -247,14 +288,15 @@ class ViewController: UIViewController {
         yAxis.drawLabelsEnabled = true
         yAxis.maxWidth = 500
         
-        let l = radarChartView.legend
-        l.horizontalAlignment = .center
-        l.verticalAlignment = .top
-        l.orientation = .horizontal
-        l.drawInside = false
-        l.font = .systemFont(ofSize: 10, weight: .light)
-        l.xEntrySpace = 7
-        l.yEntrySpace = 5
+        radarChartView.legend.enabled = false
+//        let l = radarChartView.legend
+//        l.horizontalAlignment = .center
+//        l.verticalAlignment = .top
+//        l.orientation = .horizontal
+//        l.drawInside = false
+//        l.font = .systemFont(ofSize: 10, weight: .light)
+//        l.xEntrySpace = 7
+//        l.yEntrySpace = 5
         //        l.textColor = .white
     }
 }
@@ -268,7 +310,10 @@ extension ViewController: RangeSeekSliderDelegate {
 
 extension ViewController: IAxisValueFormatter {
     func stringForValue(_ value: Double, axis: AxisBase?) -> String {
-        return agesData.projects[Int(value) % agesData.projects.count].name
+        let projects = selectedProjects.sorted(by: { $0.name < $1.name })
+        guard (projects.count != 0) else { return "No data" }
+        
+        return projects[Int(value) % projects.count].name
     }
 }
 

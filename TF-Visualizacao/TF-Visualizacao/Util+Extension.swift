@@ -15,6 +15,12 @@ extension ArraySlice {
     }
 }
 
+extension Collection {
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+
 extension Range where Range.Bound == String.Index {
     static var zero: Range<String.Index> {
         return Range<String.Index>(NSRange(location: 0, length: 0), in: "")!
@@ -57,4 +63,17 @@ extension UIColor {
 
 struct App {
     static let detailColor = UIColor.orange
+    
+    static let projects = ["Desastres", "Dietoterapia", "Easy Class", "Milhas", "OAB", "Paisagem", "Rastreamento"]
+    
+    static let projectColor = ["Desastres" : UIColor.yellow.darker()!,
+                               "Dietoterapia" : UIColor.red,
+                               "Easy Class" : UIColor.blue,
+                               "Milhas" : UIColor.cyan,
+                               "OAB" : UIColor.green,
+                               "Paisagem" : UIColor.magenta,
+                               "Rastreamento" : UIColor.purple]
 }
+
+
+
