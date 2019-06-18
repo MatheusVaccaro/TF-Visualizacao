@@ -66,7 +66,7 @@ class ViewController: UIViewController {
     
     @objc func refreshData() {
         queue.sync {
-            let projects = self.selectedProjects
+            let projects = self.selectedProjects.sorted(by: { $0.name < $1.name})
             
             let aggregatedReports = projects.map({ $0.reports })
             
