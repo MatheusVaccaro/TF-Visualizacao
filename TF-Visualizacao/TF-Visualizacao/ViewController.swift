@@ -54,26 +54,37 @@ class ViewController: UIViewController {
         configureRadarChart()
         configureLineChart()
         configureWordClouds()
-        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         refreshData()
     }
+    
     // MARK: - Data
+    var isProcessing: Bool = false
+    var queue: DispatchQueue = DispatchQueue(label: "DataProcessing")
+    
     @objc func refreshData() {
-        let projects = selectedProjects
+        queue.sync {
+            let projects = self.selectedProjects
+            
+            let aggregatedReports = projects.map({ $0.reports })
+            
+            let selectedReports = aggregatedReports
+                .flatMap({ $0 })
+                .filter({ self.selectionEarlyDate <= $0.date && $0.date <= self.selectionLateDate })
+            
+            let selectedCommits = projects
+                .flatMap({ $0.students.values }).flatMap({ $0.commits })
+                .filter({ self.selectionEarlyDate <= $0.date && $0.date <= self.selectionLateDate })
+            
+            DispatchQueue.main.async {
+                self.setRadarChartData(aggregatedReports: aggregatedReports)
+                self.setWordCloudData(reports: selectedReports)
+                self.setLineChartData(commits: selectedCommits)
+            }
+        }
         
-        let aggregatedReports = projects.map({ $0.reports })
-        
-        let selectedReports = aggregatedReports
-            .flatMap({ $0 })
-            .filter({ selectionEarlyDate <= $0.date && $0.date <= selectionLateDate })
-        
-        let selectedCommits = projects
-        	.flatMap({ $0.students.values }).flatMap({ $0.commits })
-            .filter({ selectionEarlyDate <= $0.date && $0.date <= selectionLateDate })
-        
-        setRadarChartData(aggregatedReports: aggregatedReports)
-        setWordCloudData(reports: selectedReports)
-        setLineChartData(commits: selectedCommits)
     }
     
     func setupData() {
@@ -92,13 +103,12 @@ class ViewController: UIViewController {
         slider.selectedMinValue = slider.minValue
         slider.selectedMaxValue = slider.maxValue
         
-        
-        let baseColor = App.detailColor
-        slider.tintColor = baseColor.lighter().lighter()
+        let baseColor = UIColor.secondaryLabel
+        slider.tintColor = .tertiarySystemBackground
         slider.minLabelColor = baseColor
         slider.maxLabelColor = baseColor
         slider.colorBetweenHandles = baseColor
-        slider.handleColor = baseColor
+        slider.handleColor = baseColor.withAlphaComponent(1)
         
         slider.numberFormatter = NumberDateFormatter()
         
@@ -169,6 +179,7 @@ class ViewController: UIViewController {
         lineChart.maxY = 60
         lineChart.lineWidth = 3
         lineChart.labelFont = UIFont.systemFont(ofSize: 6)
+        lineChart.labelColor = UIColor.secondaryLabel
         lineChart.xLabels = (32...48).map({ Double($0) })
         
         let dateFormatter = DateFormatter()
@@ -254,6 +265,7 @@ class ViewController: UIViewController {
         
         radarChartView.yAxis.axisMinimum = -1
         radarChartView.yAxis.axisMaximum = 1
+        radarChartView.yAxis.labelTextColor = .secondaryLabel
         radarChartView.yAxis.drawTopYLabelEntryEnabled = false
         
         radarChartView.data = data
@@ -275,6 +287,7 @@ class ViewController: UIViewController {
         
         let xAxis = radarChartView.xAxis
         xAxis.labelFont = .systemFont(ofSize: 9, weight: .light)
+        xAxis.labelTextColor = .label
         xAxis.xOffset = 0
         xAxis.yOffset = 0
         xAxis.valueFormatter = self

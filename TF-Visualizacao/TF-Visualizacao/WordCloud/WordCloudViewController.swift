@@ -69,9 +69,9 @@ class WordCloudViewController: UIViewController {
         var command = "frequency_list = ["
         for jsObject in words.map({ "{text: '\($0.word)', size: \($0.size)}" }) {
             command.append(jsObject)
-            command.append(", ")
+            command.append(",")
         }
-        command.removeLast(2)
+        if !words.isEmpty { command.removeLast(1) }
         command.append("]")
         
         execute(command: command)
