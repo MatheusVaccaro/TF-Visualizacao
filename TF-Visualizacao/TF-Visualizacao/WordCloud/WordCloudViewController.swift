@@ -15,8 +15,9 @@ class WordCloudViewController: UIViewController {
     private static let htmlWordCloudFile = "wordcloud"
     
     var webView: WKWebView!
-    
     var shouldUseRed: Bool = false
+    
+    var pageLoadBlock: (() -> Void)? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -141,6 +142,7 @@ extension WordCloudViewController: WKNavigationDelegate {
     /// Fires when the web view has finished loading the .html file containing the word cloud.
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         handlePageLoad()
+        pageLoadBlock?()
     }
 }
 

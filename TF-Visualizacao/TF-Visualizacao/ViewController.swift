@@ -84,7 +84,6 @@ class ViewController: UIViewController {
                 self.setLineChartData(commits: selectedCommits)
             }
         }
-        
     }
     
     func setupData() {
@@ -214,12 +213,14 @@ class ViewController: UIViewController {
     // MARK: - Word clouds
     func configureWordClouds() {
         self.lessonsLearnedWordCloudVC = WordCloudViewController()
+        lessonsLearnedWordCloudVC.pageLoadBlock = { self.refreshData() }
         addChild(lessonsLearnedWordCloudVC)
         lessonsLearnedWordCloudContainerView.addSubview(lessonsLearnedWordCloudVC.view)
         lessonsLearnedWordCloudVC.view.constrainedExpansion(inside: lessonsLearnedWordCloudContainerView)
         lessonsLearnedWordCloudVC.didMove(toParent: self)
         
         self.problemsEncounteredWordCloudVC = WordCloudViewController()
+        problemsEncounteredWordCloudVC.pageLoadBlock = { self.refreshData() }
         problemsEncounteredWordCloudVC.shouldUseRed = true
         addChild(problemsEncounteredWordCloudVC)
         problemsEncounteredWordCloudContainerView.addSubview(problemsEncounteredWordCloudVC.view)
@@ -241,7 +242,6 @@ class ViewController: UIViewController {
     
     // MARK: - Radar Chart
     func setRadarChartData(aggregatedReports: [[AGESData.Report]]) {
-//        let aggregatedReports = agesData.projects.map({ $0.reports })
         
         var entries = [RadarChartDataEntry]()
         for reports in aggregatedReports {
