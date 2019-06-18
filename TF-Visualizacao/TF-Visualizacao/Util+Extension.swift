@@ -75,5 +75,8 @@ struct App {
                                "Rastreamento" : UIColor.systemPurple]
 }
 
-
-
+extension Double {
+    func sign() -> Double {
+        return self > 0 ? 1 : -1
+    }
+}

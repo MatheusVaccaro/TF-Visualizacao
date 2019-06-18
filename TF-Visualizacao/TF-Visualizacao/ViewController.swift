@@ -176,10 +176,11 @@ class ViewController: UIViewController {
     }
     
     func configureLineChart() {
+        lineChart.isUserInteractionEnabled = false
         lineChart.maxY = 60
         lineChart.lineWidth = 3
         lineChart.labelFont = UIFont.systemFont(ofSize: 6)
-        lineChart.labelColor = UIColor.secondaryLabel
+        lineChart.labelColor = UIColor.label
         lineChart.xLabels = (32...48).map({ Double($0) })
         
         let dateFormatter = DateFormatter()
@@ -245,8 +246,9 @@ class ViewController: UIViewController {
         var entries = [RadarChartDataEntry]()
         for reports in aggregatedReports {
             let score = reports.map({ $0.sentimentScore }).reduce(0, +) / Double(reports.count)
-            let adjustedScore = pow(score, 2) * 2
-            entries.append(RadarChartDataEntry(value: adjustedScore))
+            let adjustedScore = score + 0.4
+            let moddedScore = pow(abs(adjustedScore), 0.3) * adjustedScore.sign()
+            entries.append(RadarChartDataEntry(value: moddedScore))
         }
         
         let set1 = RadarChartDataSet(entries: entries, label: "Escore de Sentimento")
@@ -276,6 +278,7 @@ class ViewController: UIViewController {
     func configureRadarChart() {
         radarChartView.delegate = self
         
+        radarChartView.isUserInteractionEnabled = false
         radarChartView.chartDescription?.enabled = false
         radarChartView.webLineWidth = 1
         radarChartView.innerWebLineWidth = 1

@@ -107,7 +107,7 @@ class WordCloudViewController: UIViewController {
     /// - Parameter command: The command to be executed
     private func execute(command: String) {
         webView.evaluateJavaScript(command) { (result, error) in
-            print(result ?? error?.localizedDescription ?? "'\(command)' executed")
+            print(error?.localizedDescription ?? "'\(command)' executed")
         }
     }
 

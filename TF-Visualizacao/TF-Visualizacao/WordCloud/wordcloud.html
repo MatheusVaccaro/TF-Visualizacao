@@ -20,13 +20,7 @@
 			tweets = [],
 			axis;
 			
-		var frequency_list = [
-			{text: "Rick", size: 500},
-			{text: "Morty", size: 400},
-			{text: "Summer", size: 300},
-			{text: "Beth", size: 200},
-			{text: "Jerry", size: 100}
-		];
+		var frequency_list = [];
 
         var varScale = d3.scale.linear()
             .domain([10, 500])
@@ -43,7 +37,7 @@
             .on("end", draw);
 
         var greens = ["#00AD1A", "#01CC20", "#00DE21", "#38BB4C", "#2F9C3F"]
-        var reds = ["#FF1E00", "#CC1800", "#AC0600", "#CA0F16", "#C82219"];
+        var reds = ["#DD1E00", "#CC1800", "#AC0600", "#CA0F16", "#C82219"];
 		var colors = greens
         
         var fill = function(i) {
